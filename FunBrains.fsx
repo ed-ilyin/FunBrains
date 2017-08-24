@@ -99,7 +99,8 @@ let int = Int >> Core
 // let term = ("x" := "x'" := !"x" * !"x'") * ("x" := !"x" * !"x") * ("x" := "x'" := !"x" * !"x'")
 // let term = ("x" := !"x" * !"x") * ("y" := ("z" := !"y" * !"z"))
 // let term = Int 5 |> Core
-let term = ("w" := "1" := !"w" * !"1") * ("x" := !"x" * !"x") * ("y" := "z" := !"y" * !"z")
+// let term = ("w" := "1" := !"w" * !"1") * ("x" := !"x" * !"x") * ("y" := "z" := !"y" * !"z")
+let term = ("w" := !"w" * !"w") * ("y" := "z" := !"y" * !"z")
 // let term = ("z" := (!"z" * (!"y" * !"z"))) * (!"z" * !"x") * !"z"
 let t, cmd = run term
 sprint term, sprint t, cmd
