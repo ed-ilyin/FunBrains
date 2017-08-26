@@ -1,11 +1,5 @@
 type Symbol = string
 
-
-type Core =
-    | Int of int
-    | Float of float
-
-    
 type Term =
     | S of Symbol
     | A of Term * Term
@@ -13,7 +7,12 @@ type Term =
     | Core of Core
 
 
-type Command = Stop | TryAgain
+and Core =
+    | Int of int
+    | Float of float
+
+
+type Command = Stop | Continue
 
 
 let tuple x y = x, y
@@ -24,12 +23,47 @@ let rec sprint =
         | S x -> sprintf "%s" x
         | A (f, x) -> sprint x |> sprintf "(%s %s)" (sprint f)
         | L (x, t) -> sprint t |> sprintf "(λ%s. %s)" x
-        | Core x -> sprintf "%A" x
+        | Core x -> sprintf "(%A)" x
 
+let rec treettb level isNewLine =
+    let pre =
+        if isNewLine
+            then String.replicate level "| " |> sprintf "\n%s"
+            else ""
+
+    function
+        | S x -> sprintf "%s%s" pre x
+
+        | A (f, x) ->
+            treettb level true x
+                |> sprintf "%s@ %s%s" pre (treettb (level + 1) false f)
+
+        | L (x, t) -> treettb level true t |> sprintf "%sλ %s%s" pre x
+        | Core x -> sprintf "%s%A" pre x
+
+let rec treeltr level isNewLine =
+    let pre =
+        if isNewLine
+            then String.replicate level "| " |> sprintf "\n%s"
+            else ""
+
+    function
+        | S x -> sprintf "%s%s" pre x
+
+        | A (f, x) ->
+            treeltr level true f
+                |> sprintf "%s@ %s%s" pre (treeltr (level + 1) false x)
+
+        | L (x, t) ->
+            S x
+                |> treeltr level true
+                |> sprintf "%sλ %s%s" pre (treeltr (level + 1) false t)
+
+        | Core x -> sprintf "%s%A" pre x
 
 let log tag x =
-    // do sprint x |> printfn "%s: %s" tag
-    do printfn "%s: %A" tag x
+    do sprint x |> printfn "%s: %s" tag
+    // do printfn "%s: %A" tag x
     x
 
 
@@ -80,12 +114,9 @@ let rec run =
         | A (L (s, t), a) -> t |> beta s a |> run
 
         | A (f, x) ->
-            match run f, run x with
-                | (f, Stop), (x, _) -> A (f, x), Stop
-                | (f, _), (x, _) -> A (f, x) |> run
+            match run f with
+                | f', Stop -> A (f', x), Stop 
+                | f', Continue -> A (f', x) |> run
 
-        | L (x, t) ->
-            let t, _ = run t
-            L (x, t), TryAgain
-
+        | L (x, t) -> L (x, t), Continue 
         | Core x -> Core x, Stop
