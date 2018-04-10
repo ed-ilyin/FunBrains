@@ -121,10 +121,10 @@ let rec run =
         | L (x, t) -> L (x, t), Continue 
         | Core x -> Core x, Stop
 
-let pre level =
-    String.replicate level "  " |> sprintf "%s"
-
 let rec code level isNewLine =
+    let pre =
+        String.replicate level "  " |> sprintf "%s"
+
     function
         | S x -> sprintf "%s%s" pre x
         | L (v1, S v2) when v1 = v2 -> sprintf "%sid" pre
