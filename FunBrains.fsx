@@ -14,7 +14,7 @@ let fac =
 
 // let term = ch3
 // let term = fac * int 0
-// let term = fac * ch3
+let term = fac * ch3
 // let term = ("z" := ("x" := !"x" * !"z") * !"x") * (("y" := !"x" * !"y") * int 5)
 // let term = ("x" := "x'" := !"x" * !"x'") * ("x" := !"x" * !"x") * ("x" := "x'" := !"x" * !"x'")
 // let term = ("x" := !"x" * !"x") * ("y" := ("z" := !"y" * !"z"))
@@ -29,7 +29,9 @@ let fac =
 // let w = "x" :=  !"x" * !"x"
 // let W = w * w
 // let term = ("x" := !"F" * !"x" * (!"G" * !"x") * !"x") * !"N"
-let term = ("x" := "y" := !"x" * !"y") * !"y"
+// let term = ("x" := ("y" := !"F" * !"x" * (!"G" * !"y") * !"x") * !"M") * (("z" := !"z" * !"F") * !"O")
+// let term = ("profit" := "output" := !"profit" * !"output") * !"selection"
 let t, _ = Lambda.run term
 Lambda.treettb 0 true term |> printfn "%s"
-Lambda.treettb 0 true t |> printfn "%s"
+Lambda.code 0 true term |> printfn "%s"
+Lambda.code 0 true t |> printfn "%s"

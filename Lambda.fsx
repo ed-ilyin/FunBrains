@@ -2,8 +2,8 @@ type Symbol = string
 
 type Term =
     | S of Symbol
-    | A of Term * Term
     | L of Symbol * Term
+    | A of Term * Term
     | Core of Core
 
 
@@ -21,8 +21,8 @@ let tuple x y = x, y
 let rec sprint =
     function
         | S x -> sprintf "%s" x
-        | A (f, x) -> sprint x |> sprintf "(%s %s)" (sprint f)
         | L (x, t) -> sprint t |> sprintf "(λ%s. %s)" x
+        | A (f, x) -> sprint x |> sprintf "(%s %s)" (sprint f)
         | Core x -> sprintf "(%A)" x
 
 let rec treettb level isNewLine =
@@ -120,3 +120,34 @@ let rec run =
 
         | L (x, t) -> L (x, t), Continue 
         | Core x -> Core x, Stop
+
+let pre level =
+    String.replicate level "  " |> sprintf "%s"
+
+let rec code level isNewLine =
+    function
+        | S x -> sprintf "%s%s" pre x
+        | L (v1, S v2) when v1 = v2 -> sprintf "%sid" pre
+        | L (v1, S v2) -> sprintf "%sλ %s → %s" pre v1 v2
+        | L (x, t) ->
+            code (level + 1) true t |> sprintf "%sλ %s →%s" pre x
+        | A (S v1, S v2) ->
+            sprintf "%s%s %s" pre v1 v2
+        | A (L (v1, t), S v2) ->
+            sprintf "%s%s = %s%s"
+                pre
+                v1
+                v2
+                (code level true t)
+        | A (L (v, t), x) ->
+            sprintf "%s%s = %s%s"
+                pre
+                v
+                (code (level + 1) true x)
+                (code level true t)
+        | A (f, x) ->
+            code level true x
+                |> sprintf "%s@ %s%s"
+                    pre
+                    (code (level + 1) false f)
+        | Core x -> sprintf "%s%A" pre x
